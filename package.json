@@ -1,0 +1,21 @@
+{
+  "name": "crawlqa",
+  "version": "1.0.0",
+  "main": "launch.js",
+  "scripts": {
+    "start": "node server.js",
+    "launch": "node launch.js"
+  },
+  "keywords": ["ollama", "qa", "crawler", "website", "testing"],
+  "author": "",
+  "license": "ISC",
+  "description": "Website health scanner — checks for broken links, SEO issues, accessibility, and more.",
+  "dependencies": {
+    "axios": "^1.18.0",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "playwright": "^1.61.0",
+    "stripe": "^22.2.2"
+  }
+}

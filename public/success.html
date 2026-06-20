@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CrawlQA — Full Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e0e0e0; min-height: 100vh; }
+
+    header { background: #1a1d27; border-bottom: 1px solid #2a2d3a; padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
+    header span { font-size: 0.85rem; color: #6b7280; }
+    .btn-pdf { background: #6366f1; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-pdf:hover { background: #4f46e5; }
+    .btn-new { background: transparent; color: #9ca3af; border: 1px solid #374151; border-radius: 8px; padding: 10px 20px; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 8px; }
+    .btn-new:hover { color: #fff; border-color: #6b7280; }
+
+    main { max-width: 820px; margin: 40px auto; padding: 0 24px; }
+
+    .loading { text-align: center; padding: 80px; color: #6b7280; }
+    .spinner { width: 40px; height: 40px; border: 3px solid #2a2d3a; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .success-banner { background: #22c55e15; border: 1px solid #22c55e33; border-radius: 12px; padding: 16px 24px; margin-bottom: 28px; color: #4ade80; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+
+    .report-header { background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 16px; padding: 24px 32px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .report-url strong { color: #fff; font-size: 1.1rem; display: block; margin-bottom: 4px; }
+    .report-url span { font-size: 0.85rem; color: #9ca3af; }
+    .score-badges { display: flex; gap: 10px; }
+    .score-badge { text-align: center; padding: 10px 16px; border-radius: 10px; font-weight: 700; font-size: 1.1rem; min-width: 60px; }
+    .score-badge small { display: block; font-size: 0.65rem; font-weight: 500; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .score-critical { background: #ff000022; color: #f87171; border: 1px solid #f8717144; }
+    .score-medium   { background: #f59e0b22; color: #fbbf24; border: 1px solid #fbbf2444; }
+    .score-low      { background: #3b82f622; color: #60a5fa; border: 1px solid #60a5fa44; }
+    .score-passed   { background: #22c55e22; color: #4ade80; border: 1px solid #4ade8044; }
+
+    .section { background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 16px; margin-bottom: 16px; overflow: hidden; }
+    .section-header { padding: 16px 24px; font-weight: 600; font-size: 0.95rem; border-bottom: 1px solid #2a2d3a; }
+    .section-critical .section-header { color: #f87171; }
+    .section-medium   .section-header { color: #fbbf24; }
+    .section-low      .section-header { color: #60a5fa; }
+    .section-passed   .section-header { color: #4ade80; }
+    .finding-item { padding: 12px 24px; font-size: 0.92rem; color: #d1d5db; border-bottom: 1px solid #1f2937; line-height: 1.5; }
+    .finding-item:last-child { border-bottom: none; }
+    .empty-msg { padding: 16px 24px; color: #6b7280; font-size: 0.9rem; font-style: italic; }
+
+    .error-box { background: #ff000015; border: 1px solid #f8717133; border-radius: 12px; padding: 20px 24px; color: #f87171; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>CrawlQA</h1>
+    <span>Full Report</span>
+  </div>
+  <div>
+    <a href="/" class="btn-new">← New Scan</a>
+    <a id="pdfBtn" href="#" class="btn-pdf" style="display:none">⬇ Download PDF</a>
+  </div>
+</header>
+
+<main>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Loading your full report...</p>
+  </div>
+  <div id="content"></div>
+</main>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+  const scanId = params.get('scan_id');
+
+  async function loadReport() {
+    if (!sessionId || !scanId) {
+      showError('Missing payment or scan information. Please run a new scan.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/full-report?session_id=${sessionId}&scan_id=${scanId}`);
+      const data = await res.json();
+
+      if (data.error) { showError(data.error); return; }
+
+      // Show PDF button
+      const pdfBtn = document.getElementById('pdfBtn');
+      pdfBtn.href = `/download-pdf?scan_id=${scanId}`;
+      pdfBtn.style.display = 'inline-block';
+
+      renderReport(data);
+    } catch (err) {
+      showError('Could not load your report. Please contact support.');
+    } finally {
+      document.getElementById('loading').style.display = 'none';
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').innerHTML = `<div class="error-box">⚠️ ${msg}</div>`;
+  }
+
+  function renderReport(data) {
+    const scanned = new Date(data.scannedAt).toLocaleString();
+    const content = document.getElementById('content');
+
+    content.innerHTML = `
+      <div class="success-banner">✅ Payment confirmed — here's your full report</div>
+
+      <div class="report-header">
+        <div class="report-url">
+          <strong>${data.url}</strong>
+          <span>Full report · Scanned ${scanned}</span>
+        </div>
+        <div class="score-badges">
+          <div class="score-badge score-critical">${data.critical.length}<small>Critical</small></div>
+          <div class="score-badge score-medium">${data.medium.length}<small>Medium</small></div>
+          <div class="score-badge score-low">${data.low.length}<small>Low</small></div>
+          <div class="score-badge score-passed">${data.passed.length}<small>Passed</small></div>
+        </div>
+      </div>
+
+      ${renderSection('🔴 Critical Issues', data.critical, 'critical')}
+      ${renderSection('🟡 Medium Issues', data.medium, 'medium')}
+      ${renderSection('🔵 Low Priority', data.low, 'low')}
+      ${renderSection('✅ Passed Checks', data.passed, 'passed')}
+    `;
+  }
+
+  function renderSection(title, items, type) {
+    const body = items.length === 0
+      ? `<div class="empty-msg">None found</div>`
+      : items.map(i => `<div class="finding-item">${i}</div>`).join('');
+    return `
+      <div class="section section-${type}">
+        <div class="section-header">${title} (${items.length})</div>
+        <div class="section-body">${body}</div>
+      </div>`;
+  }
+
+  loadReport();
+</script>
+
+</body>
+</html>
