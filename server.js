@@ -237,7 +237,7 @@ function generatePdfHtml(findings) {
 </html>`;
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n✅ CrawlQA is running!`);
   console.log(`👉 Open your browser and go to: http://localhost:${PORT}\n`);
 });
