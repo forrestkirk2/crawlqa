@@ -9,12 +9,7 @@ const dir = __dirname;
 console.log('\n🕷  CrawlQA — Website Health Scanner');
 console.log('─────────────────────────────────────');
 
-// Check for .env
 const fs = require('fs');
-if (!fs.existsSync(path.join(dir, '.env'))) {
-  console.log('⚠️  No .env file found. Stripe payments will not work.');
-  console.log('   Create a .env file with your STRIPE_SECRET_KEY to enable payments.\n');
-}
 
 // Install dependencies if needed
 if (!fs.existsSync(path.join(dir, 'node_modules'))) {
