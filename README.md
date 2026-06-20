@@ -1,3 +1,12 @@
+---
+title: CrawlQA
+emoji: 🕷️
+colorFrom: green
+colorTo: green
+sdk: docker
+pinned: false
+---
+
 # 🕷️ CrawlQA — Website Health Scanner
 
 CrawlQA is a free, local website health scanner that checks your site for broken links, SEO issues, accessibility problems, security gaps, and more — all running privately on your own machine.
