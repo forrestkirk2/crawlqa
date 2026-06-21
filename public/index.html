@@ -409,7 +409,7 @@
       });
       const ai = await res.json();
       if (ai.unavailable || !ai.summary) {
-        aiBox.innerHTML = `<div class="ai-section"><div class="ai-header"><span style="font-size:1.1rem">🤖</span><span class="ai-header-text">AI Analysis</span><span class="ai-badge">Powered by Ollama</span></div><div class="ai-summary" style="color:#4b5563;font-style:italic">AI analysis unavailable — make sure Ollama is running with a model installed.</div></div>`;
+        aiBox.innerHTML = `<div class="ai-section"><div class="ai-header"><span style="font-size:1.1rem">🤖</span><span class="ai-header-text">AI Analysis</span><span class="ai-badge">Powered by Ollama</span></div><div class="ai-summary" style="color:#4b5563;font-style:italic">✨ AI fix suggestions are available in the local version. Download CrawlQA and run it with Ollama to get AI-powered fixes for every issue found.</div></div>`;
         return;
       }
       // Update findings inline with fix suggestions
